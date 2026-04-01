@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { useState } from 'react'
 import Sidebar from './components/Sidebar'
 import Dashboard from './pages/Dashboard'
 import BookCatalog from './pages/BookCatalog'
@@ -10,11 +11,18 @@ import Login from './pages/Login'
 function AppContent() {
   const location = useLocation()
   const isLoginPage = location.pathname === '/login'
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   return (
-    <div className="flex min-h-screen">
-      {!isLoginPage && <Sidebar />}
-      <main className={`flex-1 ${isLoginPage ? '' : 'p-8'}`}>
+    <div className="min-h-screen">
+      {!isLoginPage && (
+        <Sidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} />
+      )}
+      <main
+        className={`min-h-screen transition-[padding-left] duration-300 ease-in-out ${
+          isLoginPage ? '' : sidebarCollapsed ? 'pl-[100px]' : 'pl-80'
+        }`}
+      >
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />

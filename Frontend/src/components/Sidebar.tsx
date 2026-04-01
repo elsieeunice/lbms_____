@@ -10,9 +10,22 @@ import {
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
-const Sidebar = () => {
+type SidebarProps = {
+  collapsed?: boolean
+  onCollapsedChange?: (collapsed: boolean) => void
+}
+
+const Sidebar = ({ collapsed: collapsedProp, onCollapsedChange }: SidebarProps) => {
   const location = useLocation()
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsedInternal, setCollapsedInternal] = useState(false)
+  const collapsed = collapsedProp ?? collapsedInternal
+  const setCollapsed = (next: boolean | ((prev: boolean) => boolean)) => {
+    const computed = typeof next === 'function' ? next(collapsed) : next
+    if (collapsedProp === undefined) {
+      setCollapsedInternal(computed)
+    }
+    onCollapsedChange?.(computed)
+  }
   
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: <DashboardSquare01Icon/> },
@@ -24,7 +37,7 @@ const Sidebar = () => {
 
   return (
     <div
-      className={`min-h-screen border-r border-slate-700/10 bg-white p-6 overflow-hidden transition-[width] duration-300 ease-in-out ${
+      className={`fixed left-0 top-0 z-40 h-screen border-r border-slate-700/10 bg-white p-6 overflow-x-hidden overflow-y-auto transition-[width] duration-300 ease-in-out ${
         collapsed ? 'w-[100px]' : 'w-80'
       }`}
     >
