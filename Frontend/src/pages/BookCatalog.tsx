@@ -2,6 +2,8 @@ import axios from 'axios'
 import { ArrowRight01Icon, Layout01Icon, Search01Icon } from 'hugeicons-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { LazyLoadImage } from 'react-lazy-load-image-component'
+import 'react-lazy-load-image-component/src/effects/blur.css'
 
 const popularIsbns = ['9780857197689', '9781847941831','9781612680019', '9780062457714', '1929194013']
 
@@ -182,18 +184,28 @@ const BookCatalog = () => {
         
         <div className="mt-5">
           {loadingPopular ? (
-            <div className="text-sm text-gray-600">Loading popular books...</div>
+            <div className="flex gap-8 overflow-x-auto pb-2">
+              {Array.from({ length: 5 }).map((_, idx) => (
+                <div key={idx} className="w-48 shrink-0 animate-pulse">
+                  <div className="w-50 h-[260px] overflow-hidden bg-white border border-black/10">
+                    <div className="h-full w-full bg-gray-200" />
+                  </div>
+                  <div className="mt-2 h-4 w-40 bg-gray-200 rounded" />
+                  <div className="mt-2 h-3 w-28 bg-gray-200 rounded" />
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="flex gap-8 overflow-x-auto pb-2">
               {popular.map((book) => (
                 <div key={book.isbn} className="w-48 shrink-0">
-                  <div className="w-50 h-[260px]  overflow-hidden bg-white">
+                  <div className="w-50 h-[260px] overflow-hidden bg-white border border-black/10">
                     {book.coverUrl ? (
-                      <img
+                      <LazyLoadImage
                         src={book.coverUrl}
                         alt={book.title}
                         className="w-full h-full object-cover"
-                        loading="lazy"
+                        effect="blur"
                       />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center text-xs text-gray-500">
@@ -231,11 +243,12 @@ const BookCatalog = () => {
                   className="relative block w-40 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30"
                   aria-label={`Browse ${category.title}`}
                 >
-                  <img
+                  <LazyLoadImage
                     src={category.coverUrl}
                     alt={category.title}
-                    className="w-20 absolute bottom-9 left-1/2 -translate-x-1/2"
-                    loading="lazy"
+                    effect="blur"
+                    wrapperClassName="absolute bottom-9 left-1/2 -translate-x-1/2 w-20 "
+                    className="w-full h-full object-contain"
                   />
                   <div className="bg-gray-200 h-[70px] w-full rounded-t-xl" />
                   <div className="bg-white py-2">
