@@ -161,15 +161,17 @@ const BorrowerManagement = () => {
             Add Borrower
           </button>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <p className="text-sm text-gray-600">Total Borrowers</p>
-          <p className="text-2xl font-bold text-gray-900">{borrowers.length}</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <p className="text-sm text-gray-600">Active Now</p>
-          <p className="text-2xl font-bold text-green-600">
-            {borrowers.filter((b) => b.status === 'active').length}
-          </p>
+        <div className="flex gap-2">
+          <div className="bg-white rounded-xl p-4 border border-gray-200">
+            <p className="text-sm text-gray-600">Total Borrowers</p>
+            <p className="text-2xl font-bold w-[200px]">{borrowers.length}</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 border border-gray-200">
+            <p className="text-sm text-gray-600">Active Now</p>
+            <p className="text-2xl font-bold w-[200px] text-black">
+              {borrowers.filter((b) => b.status === 'active').length}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -254,79 +256,99 @@ const BorrowerManagement = () => {
 
       {/* Borrower Details & History */}
       {selectedBorrower && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Borrower Details */}
-          <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Borrower Details</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
-                  <User03Icon size={40} className="text-gray-500" />
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">{selectedBorrower.name}</p>
-                <span className={`inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(selectedBorrower.status)}`}>
-                  {selectedBorrower.status}
-                </span>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Mail02Icon size={16} />
-                  {selectedBorrower.email}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <AiPhone01Icon size={16} />
-                  {selectedBorrower.phone}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <MapPinpoint01Icon size={16} />
-                  {selectedBorrower.address}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Calendar01Icon size={16} />
-                  Member since {selectedBorrower.membershipDate}
-                </div>
-              </div>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          onMouseDown={(e) => {
+            if (e.currentTarget === e.target) setSelectedBorrower(null)
+          }}
+        >
+          <div className="w-full max-w-5xl rounded-xl bg-white border border-gray-200 overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Borrower Details</h3>
+              <button
+                type="button"
+                className="text-gray-400 hover:text-gray-600"
+                onClick={() => setSelectedBorrower(null)}
+              >
+                ×
+              </button>
             </div>
-          </div>
 
-          {/* Borrowing History */}
-          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Borrowing History</h3>
-            </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                {borrowingHistory.map((history) => (
-                  <div key={history.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-16 bg-gray-200 rounded flex items-center justify-center">
-                        <BookOpen01Icon size={20} className="text-gray-500" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{history.bookTitle}</p>
-                        <p className="text-sm text-gray-500">{history.bookId}</p>
-                        <div className="flex items-center gap-4 mt-1">
-                          <span className="text-xs text-gray-500">
-                            Borrowed: {history.borrowDate}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            Due: {history.dueDate}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getHistoryStatusColor(history.status)}`}>
-                        {history.status}
-                      </span>
-                      {history.returnDate && (
-                        <p className="text-xs text-gray-500 mt-1">Returned: {history.returnDate}</p>
-                      )}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 max-h-[80vh] overflow-y-auto">
+              <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Borrower Details</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
+                      <User03Icon size={40} className="text-gray-500" />
                     </div>
                   </div>
-                ))}
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{selectedBorrower.name}</p>
+                    <span className={`inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(selectedBorrower.status)}`}>
+                      {selectedBorrower.status}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Mail02Icon size={16} />
+                      {selectedBorrower.email}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <AiPhone01Icon size={16} />
+                      {selectedBorrower.phone}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <MapPinpoint01Icon size={16} />
+                      {selectedBorrower.address}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Calendar01Icon size={16} />
+                      Member since {selectedBorrower.membershipDate}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200">
+                <div className="p-6 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900">Borrowing History</h3>
+                </div>
+                <div className="p-6">
+                  <div className="space-y-4">
+                    {borrowingHistory.map((history) => (
+                      <div key={history.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-16 bg-gray-200 rounded flex items-center justify-center">
+                            <BookOpen01Icon size={20} className="text-gray-500" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{history.bookTitle}</p>
+                            <p className="text-sm text-gray-500">{history.bookId}</p>
+                            <div className="flex items-center gap-4 mt-1">
+                              <span className="text-xs text-gray-500">
+                                Borrowed: {history.borrowDate}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Due: {history.dueDate}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getHistoryStatusColor(history.status)}`}>
+                            {history.status}
+                          </span>
+                          {history.returnDate && (
+                            <p className="text-xs text-gray-500 mt-1">Returned: {history.returnDate}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -84,7 +84,7 @@ const Dashboard = () => {
         <p className="text-md font-light text-gray-600 mt-2">Welcome Back! Administrator</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 md:grid-cols-4 gap-4">
         <StatCard
           icon={<Book02Icon size={22} />}
           iconBgClassName="bg-blue-100"
@@ -122,7 +122,7 @@ const Dashboard = () => {
         />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mt-6 grid grid-cols-2 md:grid-cols-2 gap-4">
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div className="items-center gap-3">
@@ -160,7 +160,7 @@ const Dashboard = () => {
                 className="flex items-center gap-3 border border-gray-200 bg-gray-50 p-3 pl-12 relative"
               >
                 <div
-                  className="text-8xl font-bold absolute left-[-17px] top-1/2 -translate-y-1/2 text-transparent pointer-events-none z-0 leading-none"
+                  className="text-8xl font-bold absolute left-[-17px] top-[80px] -translate-y-1/2 text-transparent pointer-events-none z-0 leading-none"
                   style={{ WebkitTextStroke: '1px rgb(0 0 0)' }}
                 >
                   {idx + 1}
@@ -181,4 +181,4 @@ const Dashboard = () => {
   )
 }
 
-export default Dashboard
+export default Dashboard;
