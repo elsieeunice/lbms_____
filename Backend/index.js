@@ -4,6 +4,9 @@ const session = require('express-session')
 const cors = require('cors')
 
 const authRoutes = require('./routes/auth')
+const booksRoutes = require('./routes/books')
+const borrowersRoutes = require('./routes/borrowers')
+const loansRoutes = require('./routes/loans')
 
 const PORT = process.env.PORT || 5000
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/lbms'
@@ -41,6 +44,9 @@ app.get('/health', (req, res) => {
 })
 
 app.use('/api/auth', authRoutes)
+app.use('/api/books', booksRoutes)
+app.use('/api/borrowers', borrowersRoutes)
+app.use('/api/loans', loansRoutes)
 
 app.use((err, req, res, next) => {
   // eslint-disable-next-line no-console

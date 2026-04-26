@@ -165,9 +165,7 @@ const Dashboard = () => {
                 >
                   {idx + 1}
                 </div>
-                <div className="absolute z-20 left-3 w-[45px] h-16 bg-blue-500 border border-blue-500 flex items-center justify-center text-white">
-                  <BookOpen01Icon size={18} />
-                </div>
+                <div className="absolute z-20 left-3 w-[45px] h-16 rounded bg-white border border-gray-200 overflow-hidden" />
                 <div className="min-w-0 relative z-10 ml-4 ">
                   <p className="text-sm font-medium text-gray-900 line-clamp-1">{book.title}</p>
                   <p className="text-xs text-gray-600 mt-1 line-clamp-1">{book.author}</p>

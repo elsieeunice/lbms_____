@@ -29,6 +29,7 @@ const BorrowerManagement = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedBorrower, setSelectedBorrower] = useState<Borrower | null>(null)
   const [borrowingHistory, setBorrowingHistory] = useState<BorrowingHistory[]>([])
+  const [activeTab, setActiveTab] = useState<'members' | 'loans'>('members')
 
   // Mock data
   useEffect(() => {
@@ -175,84 +176,146 @@ const BorrowerManagement = () => {
         </div>
       </div>
 
-      {/* Borrowers List */}
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Borrowers List</h2>
+      <div className="p-2 bg-gray-100 rounded-xl space-x-2 inline-flex items-center w-fit">
+        <div
+          className={`p-2 rounded-lg border w-24 flex items-center justify-center text-sm cursor-pointer ${
+            activeTab === 'members' ? 'bg-white' : 'bg-gray-100'
+          }`}
+          onClick={() => setActiveTab('members')}
+        >
+          Members
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Borrower
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Books
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredBorrowers.map((borrower) => (
-                <tr key={borrower.id} className="hover:bg-gray-50 cursor-pointer">
-                  <td
-                    className="px-6 py-4 whitespace-nowrap"
-                    onClick={() => setSelectedBorrower(borrower)}
-                  >
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                        <User03Icon size={20} className="text-gray-500" />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{borrower.name}</div>
-                        <div className="text-sm text-gray-500">Member since {borrower.membershipDate}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{borrower.email}</div>
-                    <div className="text-sm text-gray-500">{borrower.phone}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(borrower.status)}`}>
-                      {borrower.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{borrower.currentBorrowed} / {borrower.totalBorrowed}</div>
-                    {borrower.overdueBooks > 0 && (
-                      <div className="text-sm text-red-600">{borrower.overdueBooks} overdue</div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedBorrower(borrower)
-                      }}
-                      className="text-gray-600 hover:text-gray-900 mr-3"
-                    >
-                      <Edit02Icon size={18} />
-                    </button>
-                    <button type="button" className="text-red-600 hover:text-red-900">
-                      <Delete01Icon size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div
+          className={`p-2 rounded-lg border w-28 flex items-center justify-center text-sm cursor-pointer ${
+            activeTab === 'loans' ? 'bg-white' : 'bg-gray-100'
+          }`}
+          onClick={() => setActiveTab('loans')}
+        >
+          Loan Records
         </div>
       </div>
+
+      {/* Borrowers List */}
+      {activeTab === 'members' ? (
+        <div className="bg-white rounded-xl border border-gray-200">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">Members</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Member
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contact
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Loans
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredBorrowers.map((borrower) => (
+                  <tr key={borrower.id} className="hover:bg-gray-50 cursor-pointer">
+                    <td className="px-6 py-4 whitespace-nowrap" onClick={() => setSelectedBorrower(borrower)}>
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                          <User03Icon size={20} className="text-gray-500" />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{borrower.name}</div>
+                          <div className="text-sm text-gray-500">Member since {borrower.membershipDate}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{borrower.email}</div>
+                      <div className="text-sm text-gray-500">{borrower.phone}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(borrower.status)}`}>
+                        {borrower.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {borrower.currentBorrowed} / {borrower.totalBorrowed}
+                      </div>
+                      {borrower.overdueBooks > 0 && (
+                        <div className="text-sm text-red-600">{borrower.overdueBooks} overdue</div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedBorrower(borrower)
+                        }}
+                        className="text-gray-600 hover:text-gray-900 mr-3"
+                      >
+                        <Edit02Icon size={18} />
+                      </button>
+                      <button type="button" className="text-red-600 hover:text-red-900">
+                        <Delete01Icon size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-gray-200">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">Loan Records</h2>
+          </div>
+          <div className="p-6">
+            {!selectedBorrower ? (
+              <div className="text-sm text-gray-600">Select a member to view their loan records.</div>
+            ) : (
+              <div className="space-y-4">
+                {borrowingHistory.map((history) => (
+                  <div key={history.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-16 bg-gray-200 rounded flex items-center justify-center">
+                        <BookOpen01Icon size={20} className="text-gray-500" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">{history.bookTitle}</p>
+                        <p className="text-sm text-gray-500">{history.bookId}</p>
+                        <div className="flex items-center gap-4 mt-1">
+                          <span className="text-xs text-gray-500">Borrowed: {history.borrowDate}</span>
+                          <span className="text-xs text-gray-500">Due: {history.dueDate}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getHistoryStatusColor(history.status)}`}>
+                        {history.status}
+                      </span>
+                      {history.returnDate && (
+                        <p className="text-xs text-gray-500 mt-1">Returned: {history.returnDate}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {borrowingHistory.length === 0 ? (
+                  <div className="text-sm text-gray-600">No loan records for this member.</div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Borrower Details & History */}
       {selectedBorrower && (

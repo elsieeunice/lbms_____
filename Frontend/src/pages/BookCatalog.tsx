@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { ArrowRight01Icon, Layout01Icon, Search01Icon } from 'hugeicons-react'
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import 'react-lazy-load-image-component/src/effects/blur.css'
 
@@ -35,9 +35,32 @@ type BookCategory = {
   coverUrl: string
 }
 
+type OpenLibrarySearchDoc = {
+  key: string
+  title: string
+  author_name?: string[]
+  first_publish_year?: number
+  cover_i?: number
+}
+
+type OpenLibrarySearchResponse = {
+  docs: OpenLibrarySearchDoc[]
+}
+
 const BookCatalog = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [params, setParams] = useSearchParams()
   const [popular, setPopular] = useState<PopularBook[]>([])
   const [loadingPopular, setLoadingPopular] = useState(false)
+  const urlQuery = params.get('q') ?? ''
+  const [searchQuery, setSearchQuery] = useState(urlQuery)
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchResults, setSearchResults] = useState<OpenLibrarySearchDoc[]>([])
+
+  const isSearchRoute = location.pathname.startsWith('/books/search')
+  const trimmedQuery = useMemo(() => searchQuery.trim(), [searchQuery])
+  const isSearching = isSearchRoute || Boolean(trimmedQuery)
 
   const bookCategories: BookCategory[] = [
     {
@@ -148,6 +171,59 @@ const BookCatalog = () => {
     }
   }, [])
 
+  useEffect(() => {
+    setSearchQuery(urlQuery)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlQuery])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const run = async () => {
+      if (!isSearchRoute || !trimmedQuery) {
+        setSearchResults([])
+        return
+      }
+
+      try {
+        setSearchLoading(true)
+        const { data } = await axios.get<OpenLibrarySearchResponse>(
+          `https://openlibrary.org/search.json?q=${encodeURIComponent(trimmedQuery)}&limit=24`,
+        )
+        if (!cancelled) setSearchResults(data.docs ?? [])
+      } catch {
+        if (!cancelled) setSearchResults([])
+      } finally {
+        if (!cancelled) setSearchLoading(false)
+      }
+    }
+
+    const t = setTimeout(run, 300)
+
+    return () => {
+      cancelled = true
+      clearTimeout(t)
+    }
+  }, [isSearchRoute, trimmedQuery])
+
+  const updateSearch = (nextValue: string) => {
+    setSearchQuery(nextValue)
+    const nextTrimmed = nextValue.trim()
+
+    if (!nextTrimmed) {
+      const nextParams = new URLSearchParams(params)
+      nextParams.delete('q')
+      setParams(nextParams, { replace: true })
+      navigate('/books', { replace: true })
+      return
+    }
+
+    const nextParams = new URLSearchParams(params)
+    nextParams.set('q', nextTrimmed)
+    setParams(nextParams, { replace: true })
+    if (!isSearchRoute) navigate(`/books/search?q=${encodeURIComponent(nextTrimmed)}`, { replace: true })
+  }
+
   return (
     <div className="">
       <div className="bg-yellow-100 rounded-bl-[90px] w-full relative px-7 p-3 h-[53vh]">
@@ -166,9 +242,23 @@ const BookCatalog = () => {
             <input 
               type="text" 
               placeholder="Search books..." 
+              value={searchQuery}
+              onChange={(e) => updateSearch(e.target.value)}
+              onFocus={() => {
+                if (!isSearchRoute) navigate('/books/search', { replace: true })
+              }}
               className="p-4 outline-none" 
             />
-            <button className="bg-black p-3 text-sm text-white rounded-xl font-light w-[110px]">Search</button>
+            <button
+              type="button"
+              onClick={() => {
+                const q = searchQuery.trim()
+                navigate(q ? `/books/search?q=${encodeURIComponent(q)}` : '/books/search')
+              }}
+              className="bg-black p-3 text-sm text-white rounded-xl font-light w-[110px]"
+            >
+              Search
+            </button>
           </div> 
         </div>
         
@@ -183,7 +273,77 @@ const BookCatalog = () => {
         </div>
         
         <div className="mt-5">
-          {loadingPopular ? (
+          {isSearching ? (
+            <div className="bg-white/70 border border-black/10 rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-gray-900">
+                  {trimmedQuery ? `Results for "${trimmedQuery}"` : 'Start typing to search'}
+                </p>
+                <button
+                  type="button"
+                  className="text-sm text-gray-700 hover:text-gray-900"
+                  onClick={() => updateSearch('')}
+                >
+                  Clear
+                </button>
+              </div>
+
+              <div className="mt-4">
+                {searchLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Array.from({ length: 6 }).map((_, idx) => (
+                      <div key={idx} className="animate-pulse rounded-xl border border-gray-200 bg-white p-4 flex gap-4">
+                        <div className="w-16 h-24 bg-gray-200 rounded" />
+                        <div className="flex-1">
+                          <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                          <div className="mt-2 h-3 w-1/2 bg-gray-200 rounded" />
+                          <div className="mt-4 h-3 w-1/3 bg-gray-200 rounded" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : trimmedQuery ? (
+                  searchResults.length ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {searchResults.map((doc) => {
+                        const coverUrl = doc.cover_i
+                          ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`
+                          : null
+
+                        return (
+                          <div key={doc.key} className="rounded-xl border border-gray-200 bg-white p-4 flex gap-4">
+                            <div className="w-16 h-24 bg-gray-100 rounded overflow-hidden shrink-0">
+                              {coverUrl ? (
+                                <LazyLoadImage
+                                  src={coverUrl}
+                                  alt={doc.title}
+                                  className="w-full h-full object-cover"
+                                  effect="blur"
+                                />
+                              ) : null}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-gray-900 line-clamp-2">{doc.title}</p>
+                              <p className="text-xs text-gray-600 mt-1 line-clamp-1">
+                                {(doc.author_name ?? []).slice(0, 2).join(', ') || 'Unknown author'}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-2">
+                                {doc.first_publish_year ? `First published ${doc.first_publish_year}` : 'Year unknown'}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-600">No results found.</div>
+                  )
+                ) : (
+                  <div className="text-sm text-gray-600">Start typing to search.</div>
+                )}
+              </div>
+            </div>
+          ) : loadingPopular ? (
             <div className="flex gap-8 overflow-x-auto pb-2">
               {Array.from({ length: 5 }).map((_, idx) => (
                 <div key={idx} className="w-48 shrink-0 animate-pulse">
@@ -228,7 +388,9 @@ const BookCatalog = () => {
             </div>
           )}
 
-          <div className='py-10'>
+          {!isSearching && (
+            <>
+              <div className='py-10'>
             <div className='flex justify-between items-center mb-20'>
               <p className="text-lg font-medium mb-4">Book Categories</p>
               <div className='bg-gray-100 rounded-xl p-2'>
@@ -247,7 +409,7 @@ const BookCatalog = () => {
                     src={category.coverUrl}
                     alt={category.title}
                     effect="blur"
-                    wrapperClassName="absolute bottom-9 left-1/2 -translate-x-1/2 w-20 "
+                    wrapperClassName="absolute bottom-9 right-[-40px] -translate-x-1/2 w-20 "
                     className="w-full h-full object-contain"
                   />
                   <div className="bg-gray-200 h-[70px] w-full rounded-t-xl" />
@@ -260,6 +422,60 @@ const BookCatalog = () => {
               ))}
             </div>
           </div>
+
+          <div className="pb-10">
+            <div className="flex justify-between items-center">
+              <h1 className="text-lg font-medium">Most Popular</h1>
+              <div className="flex items-center gap-2 bg-white p-2 rounded-lg cursor-pointer">
+                <p>View all</p>
+                <ArrowRight01Icon />
+              </div>
+            </div>
+
+            <div className="mt-5">
+              {loadingPopular ? (
+                <div className="flex gap-8 overflow-x-auto pb-2">
+                  {Array.from({ length: 5 }).map((_, idx) => (
+                    <div key={idx} className="w-48 shrink-0 animate-pulse">
+                      <div className="w-50 h-[260px] overflow-hidden bg-white border border-black/10">
+                        <div className="h-full w-full bg-gray-200" />
+                      </div>
+                      <div className="mt-2 h-4 w-40 bg-gray-200 rounded" />
+                      <div className="mt-2 h-3 w-28 bg-gray-200 rounded" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex gap-8 overflow-x-auto pb-2">
+                  {popular.map((book) => (
+                    <div key={book.isbn} className="w-48 shrink-0">
+                      <div className="w-50 h-[260px] overflow-hidden bg-white border border-black/10">
+                        {book.coverUrl ? (
+                          <LazyLoadImage
+                            src={book.coverUrl}
+                            alt={book.title}
+                            className="w-full h-full object-cover"
+                            effect="blur"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center text-xs text-gray-500">
+                            No cover
+                          </div>
+                        )}
+                      </div>
+                      <p className="mt-2 text-sm font-medium text-gray-900 line-clamp-2">{book.title}</p>
+                      {book.authors.length > 0 && (
+                        <p className="text-xs text-gray-600 line-clamp-1">{book.authors.join(', ')}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+            </>
+          )}
 
         </div>
 

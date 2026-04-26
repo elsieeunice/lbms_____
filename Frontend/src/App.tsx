@@ -27,6 +27,7 @@ function AppContent() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/books" element={<BookCatalog />} />
+          <Route path="/books/search" element={<BookCatalog />} />
           <Route path="/borrowers" element={<BorrowerManagement />} />
           <Route path="/inventory" element={<InventoryManagement />} />
           <Route path="/analytics" element={<Analytics />} />
